@@ -175,7 +175,8 @@
         status: 'paid',
         amount: parseFloat(qs.get('amount')),
         expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-        paid_at: new Date().toISOString()
+        paid_at: new Date().toISOString(),
+        reservation_id: reservationId
       };
 
       console.log("db_payload:", db_payload);

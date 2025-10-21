@@ -72,7 +72,7 @@
     const seq = String(Math.random()*10000|0).padStart(4,'0');
     const receiptId = `SUNWAY-${ymd}-${seq}`;
     const ts = Math.floor(Date.now()/1000);
-    const signingString = `ACCEPTED:${receiptId}|uid=${data.uid}|amt=${data.amount}|ccy=${data.currency}|ts=${ts}`;
+    const signingString = `ACCEPTED:${receiptId}|uuid=${data.reservation_id}|amt=${data.amount}|ccy=${data.currency}|ts=${ts}`;
 
     const errEl = document.getElementById('err');
     const fail = (m)=>{ errEl.textContent = m; };
@@ -158,24 +158,6 @@
 
         // auto-download
         const a=document.createElement('a'); a.download=`${receiptId}.png`; a.href=c.toDataURL('image/png'); setTimeout(()=>a.click(),150);
-
-        // POST to n8n (non-blocking)
-        fetch(WEBHOOK_URL,{
-          method:'POST',
-          headers:{'Content-Type':'application/json'},
-          body: JSON.stringify({
-            uid: data.uid,
-            reservation_id: data.reservation_id || null,
-            room_type: data.room_type || null,
-            receipt_id: receiptId,
-            brand: data.brand,
-            last4: data.last4,
-            amount: +data.amount,
-            currency: data.currency,
-            qr_text: qrText,
-            image_data_url: c.toDataURL('image/png')
-          })
-        }).catch(()=>{});
       }catch(e){
         fail(e.message || 'QR generation failed.');
       }
