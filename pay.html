@@ -4,7 +4,6 @@
   <meta charset="utf-8" />
   <title>Sunway Resort Hotel — Payment</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
     :root{
@@ -74,85 +73,87 @@
     </div>
   </div>
 
-  <script>
-    // Get booking data from URL parameters
+  <script type="module">
+    import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+    const SUPABASE_URL = "https://aleigsfkupsuxigeimqh.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFsZWlnc2ZrdXBzdXhpZ2VpbXFoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk1MTAxNzQsImV4cCI6MjA3NTA4NjE3NH0.yri1Ij57G7557vX3Xi7cNkvFQ-Mr-QuzRpBnSNFUaXA";
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
     const qs = new URLSearchParams(location.search);
-    const reservationId = qs.get('reservation_id') || '';
-    const roomType = qs.get('room_type') || '';
-    const currency = qs.get('currency') || 'MYR';
-    const startAmount = qs.get('amount');
+    const reservationId = qs.get("reservation_id") || "";
+    const roomType = qs.get("room_type") || "";
+    const currency = qs.get("currency") || "MYR";
+    const startAmount = qs.get("amount");
 
-    document.getElementById('ccyLbl').textContent = currency;
-
-    // Show booking summary
-    const summary = document.getElementById('summary');
+    document.getElementById("ccyLbl").textContent = currency;
+    const summary = document.getElementById("summary");
     summary.innerHTML = [
-      reservationId ? `<span class="pill">Reservation: ${reservationId.slice(0,8)}…</span>` : '',
-      roomType ? `<span class="pill">Room: ${roomType.replace(/-/g,' ')}</span>` : ''
-    ].join(' ');
+      reservationId ? `<span class="pill">Reservation: ${reservationId.slice(0,8)}…</span>` : "",
+      roomType ? `<span class="pill">Room: ${roomType.replace(/-/g," ")}</span>` : ""
+    ].join(" ");
 
     const byId = id => document.getElementById(id);
-    const cardEl = byId('card'),
-          expEl = byId('exp'),
-          nameEl = byId('name'),
-          amtEl = byId('amount'),
-          brandEl = byId('brand'),
-          errEl = byId('err'),
-          payBtn = byId('pay');
+    const cardEl = byId("card"),
+          expEl = byId("exp"),
+          nameEl = byId("name"),
+          amtEl = byId("amount"),
+          brandEl = byId("brand"),
+          errEl = byId("err"),
+          payBtn = byId("pay");
 
-    // Pre-fill amount
     if (startAmount && !isNaN(parseFloat(startAmount)) && parseFloat(startAmount) > 0) {
       amtEl.value = String(parseFloat(startAmount).toFixed(2));
     } else {
-      amtEl.value = '';
-      errEl.textContent = 'Missing or invalid amount. Please return to room selection.';
+      amtEl.value = "";
+      errEl.textContent = "Missing or invalid amount. Please return to room selection.";
     }
 
-    // Validation helpers
-    const cleanDigits = s => (s || '').replace(/\D+/g,'');
-    const group4 = s => s.replace(/(\d{4})(?=\d)/g,'$1 ');
-    const luhn = digits => { let sum=0,alt=false;for(let i=digits.length-1;i>=0;i--){let n=+digits[i];if(alt){n*=2;if(n>9)n-=9}sum+=n;alt=!alt}return sum%10===0; };
+    // Validation
+    const cleanDigits = s => (s || "").replace(/\D+/g,"");
+    const group4 = s => s.replace(/(\d{4})(?=\d)/g,"$1 ");
+    const luhn = digits => {let sum=0,alt=false;for(let i=digits.length-1;i>=0;i--){let n=+digits[i];if(alt){n*=2;if(n>9)n-=9}sum+=n;alt=!alt}return sum%10===0;};
     const brandOf = d => {
-      if(/^4\d{12}(\d{3})?$/.test(d))return'visa';
-      if(/^(5[1-5]\d{14})$/.test(d) || /^2(2[2-9]\d{12}|[3-6]\d{13}|7(0\d{12}|1\d{12}|20\d{12}))$/.test(d))return'mastercard';
+      if(/^4\d{12}(\d{3})?$/.test(d))return"visa";
+      if(/^(5[1-5]\d{14})$/.test(d) || /^2(2[2-9]\d{12}|[3-6]\d{13}|7(0\d{12}|1\d{12}|20\d{12}))$/.test(d))return"mastercard";
       return null;
     };
 
-    cardEl.addEventListener('input', () => {
+    cardEl.addEventListener("input", () => {
       const digits = cleanDigits(cardEl.value).slice(0,16);
       cardEl.value = group4(digits);
       const b = brandOf(digits);
-      brandEl.textContent = 'Brand: ' + (b ? b.toUpperCase() : '—');
+      brandEl.textContent = "Brand: " + (b ? b.toUpperCase() : "—");
       validate();
     });
 
-    expEl.addEventListener('input', () => {
+    expEl.addEventListener("input", () => {
       let v = cleanDigits(expEl.value).slice(0,4);
-      if(v.length>=3) v = v.slice(0,2)+'/'+v.slice(2);
+      if(v.length>=3) v = v.slice(0,2)+"/"+v.slice(2);
       expEl.value = v;
       validate();
     });
 
-    nameEl.addEventListener('input', validate);
+    nameEl.addEventListener("input", validate);
 
     function validate(){
-      errEl.textContent='';
+      errEl.textContent="";
       const amount=parseFloat(amtEl.value);
-      if (!(amount>0)) return setBad('Missing amount. Please return to room selection.');
+      if (!(amount>0)) return setBad("Missing amount. Please return to room selection.");
 
       const digits=cleanDigits(cardEl.value), b=brandOf(digits);
-      if(!b)return setBad('Enter a valid Visa/Mastercard.');
-      if(digits.length!==16)return setBad('Card must be 16 digits.');
-      if(!luhn(digits))return setBad('Card number is invalid.');
+      if(!b)return setBad("Enter a valid Visa/Mastercard.");
+      if(digits.length!==16)return setBad("Card must be 16 digits.");
+      if(!luhn(digits))return setBad("Card number is invalid.");
 
-      const exp=expEl.value;if(!/^\d{2}\/\d{2}$/.test(exp))return setBad('Expiry must be MM/YY.');
-      const [mm,yy]=exp.split('/').map(n=>+n);
+      const exp=expEl.value;if(!/^\d{2}\/\d{2}$/.test(exp))return setBad("Expiry must be MM/YY.");
+      const [mm,yy]=exp.split("/").map(n=>+n);
       const now=new Date(), currYY=now.getFullYear()%100, currMM=now.getMonth()+1, maxYY=(now.getFullYear()+10)%100;
-      if(yy<currYY||(yy===currYY&&mm<currMM))return setBad('Card is expired.');
-      if(yy>maxYY)return setBad('Expiry year is too far.');
+      if(yy<currYY||(yy===currYY&&mm<currMM))return setBad("Card is expired.");
+      if(yy>maxYY)return setBad("Expiry year is too far.");
 
       const name=nameEl.value.trim();
-      if(!/^[A-Za-z' -]{2,40}$/.test(name))return setBad('Name: 2–40 letters, spaces, - or \'.');
+      if(!/^[A-Za-z' -]{2,40}$/.test(name))return setBad("Name: 2–40 letters, spaces, - or '.");
 
       payBtn.disabled=false;
       return true;
@@ -162,21 +163,39 @@
 
     function uuid(){return([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g,c=>(c^crypto.getRandomValues(new Uint8Array(1))[0]&15>>c/4).toString(16));}
 
-    byId('pay').addEventListener('click',()=>{
+    byId("pay").addEventListener("click", async ()=>{
       if(!validate())return;
       const digits=cleanDigits(cardEl.value), b=brandOf(digits);
+
+      // Update Supabase booking record
+      if(reservationId){
+        const { error } = await supabase
+          .from("bookings")
+          .update({
+            status: "paid",
+            paid_at: new Date().toISOString()
+          })
+          .eq("id", reservationId);
+
+        if(error){
+          console.error("Failed to update booking:", error);
+          errEl.textContent = "Error saving payment. Please try again.";
+          return;
+        }
+      }
+
+      // Redirect to receipt
       const payload = {
-        reservation_id: reservationId || '',
-        room_type: roomType || '',
-        token: 'tok_' + uuid(),
+        reservation_id: reservationId || "",
+        room_type: roomType || "",
+        token: "tok_" + uuid(),
         brand: b,
         last4: digits.slice(-4),
         amount: amtEl.value,
         currency: currency,
         name: nameEl.value.trim()
       };
-      // Redirect to receipt page
-      location.href = 'receipt.html?' + new URLSearchParams(payload).toString();
+      location.href = "receipt.html?" + new URLSearchParams(payload).toString();
     });
   </script>
 </body>
