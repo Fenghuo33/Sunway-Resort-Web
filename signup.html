@@ -248,10 +248,13 @@
 
           const qs = new URLSearchParams({
             uid,
-            reservation_id: crypto.randomUUID(), // optional — just to mimic an ID
+            reservation_id: crypto.randomUUID(),
             room_type: selected,
             amount: amount.toFixed(2),
-            currency: CURRENCY
+            currency: CURRENCY,
+            day,
+            nights: nights.toString(),
+            totalPax: totalPax.toString()
           });
 
           // Redirect to your hosted pay.html

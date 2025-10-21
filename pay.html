@@ -184,6 +184,31 @@
         }
       }
 
+      const db_payload = {
+        day: qs.get('day'),
+        nights: parseInt(qs.get('nights')),
+        room_type: qs.get('room_type'),
+        pax_total: parseInt(qs.get('pax_total')),
+        status: 'paid',
+        amount: parseFloat(qs.get('amount')),
+        expires_at: new Date(Date.now() + 24*60*60*1000).toISOString(),
+        paid_at: new Date().toISOString()
+      };
+
+      try {
+        const { data, error } = await supabase.from('bookings').insert([db_payload]);
+        if (error) {
+          console.error(error);
+          alert('Failed to record booking in Supabase.');
+        } else {
+          console.log('Booking inserted:', data);
+          location.href = 'receipt.html?' + new URLSearchParams(db_payload).toString();
+        }
+      } catch (e) {
+        console.error(e);
+        alert('Unexpected error inserting booking.');
+      }
+      
       // Redirect to receipt
       const payload = {
         reservation_id: reservationId || "",
