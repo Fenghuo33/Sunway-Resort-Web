@@ -171,13 +171,14 @@
         day: qs.get('day'),
         nights: parseInt(qs.get('nights')),
         room_type: qs.get('room_type'),
-        pax_total: parseInt(qs.get('pax_total')),
+        pax_total: parseInt(qs.get('totalPax')),
         status: 'paid',
         amount: parseFloat(qs.get('amount')),
         expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
         paid_at: new Date().toISOString()
       };
 
+      console.log("db_payload:", db_payload);
       try {
         const { data, error } = await supabase.from('bookings').insert([db_payload]);
         if (error) {
