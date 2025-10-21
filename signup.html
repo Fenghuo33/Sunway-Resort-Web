@@ -1,0 +1,271 @@
+  <!doctype html>
+  <html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>Sunway Resort Hotel — Book a Room</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+      :root{ --main:#FFFDD0; --secondary:#C4A484; --accent:#AA7F2E; --black:#000; --text:#1a1a1a; }
+      *{box-sizing:border-box}
+      body{ margin:0; background:var(--main); color:var(--text); font-family:'Poppins',sans-serif; font-size:16px; line-height:1.6; }
+      header{ background:var(--black); color:var(--main); text-align:center; padding:30px 10px 40px; box-shadow:0 4px 20px rgba(0,0,0,.3); }
+      header h1{ margin:0; font-family:'Playfair Display',serif; font-size:36px; color:var(--accent); letter-spacing:1px; }
+      header p{ color:var(--main); font-size:15px; margin-top:8px; opacity:.85; }
+      .wrap{ max-width:1120px; margin:50px auto; padding:20px; }
+      .grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:20px; }
+      .card{ background:var(--main); border:1px solid var(--secondary); border-radius:16px; overflow:hidden; box-shadow:0 4px 16px rgba(0,0,0,.1); display:flex; flex-direction:column; transition:transform .25s, box-shadow .25s; }
+      .card:hover{ transform:translateY(-4px); box-shadow:0 8px 24px rgba(0,0,0,.15); }
+      .img{ aspect-ratio:16/9; background:#000; } .img img{ width:100%; height:100%; object-fit:cover; display:block; }
+      .body{ padding:18px 20px; display:flex; flex-direction:column; flex-grow:1; }
+      .name{ font-family:'Playfair Display',serif; font-size:20px; color:var(--accent); margin-bottom:6px; }
+      .desc{ font-size:14px; margin:6px 0 12px; color:#333; }
+      .meta{ color:var(--secondary); font-size:13px; margin-bottom:6px; }
+      .price{ margin-top:auto; font-weight:600; color:var(--black); font-size:17px; }
+      .selectBtn{ margin-top:10px; background:var(--black); color:var(--main); border:none; border-radius:10px; padding:10px 14px; font-weight:500; cursor:pointer; transition:background .2s; }
+      .selectBtn:hover{ background:var(--accent); } .selectBtn.active{ background:var(--accent); }
+      .panel{ margin-top:40px; background:#fdfbf1; border:1px solid var(--secondary); border-radius:16px; padding:24px; box-shadow:0 4px 16px rgba(0,0,0,.1); }
+      label{ display:block; margin:10px 0 4px; font-weight:500; color:var(--black); }
+      input,select,textarea{ width:100%; padding:10px 12px; border-radius:10px; border:1px solid var(--secondary); background:#fffdf8; color:#000; font-family:'Poppins',sans-serif; }
+      textarea{ resize:vertical; min-height:80px; }
+      input:focus,select:focus,textarea:focus{ outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(170,127,46,.25); }
+      .row{ display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:14px; }
+      .radio-row{ display:flex; gap:14px; flex-wrap:wrap; }
+      .radio-pill{ display:flex; align-items:center; gap:8px; background:#fff; border:1px solid var(--secondary); padding:8px 12px; border-radius:999px; cursor:pointer; }
+      .cta{ background:var(--accent); color:var(--main); border:none; border-radius:12px; padding:14px 18px; font-weight:600; font-size:16px; margin-top:16px; cursor:pointer; transition:opacity .2s; }
+      .cta:hover{ opacity:.85; }
+      .note{ font-size:13px; color:#555; margin-top:8px; }
+      .err{ color:#b00; margin-top:8px; }
+      .ok{ color:green; margin-top:8px; }
+      footer{ text-align:center; margin:50px 0 20px; font-size:13px; color:#555; }
+      .hidden{ display:none !important; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Sunway Resort Hotel</h1>
+      <p>Luxury Rooms &amp; Suites — Kuala Lumpur</p>
+    </header>
+
+    <div class="wrap">
+      <h2 style="font-family:'Playfair Display',serif;color:var(--accent);margin-bottom:12px;">Select Your Room</h2>
+      <div id="rooms" class="grid"></div>
+
+      <div class="panel">
+        <h3 style="font-family:'Playfair Display',serif;color:var(--accent);margin-top:0;">Guest Details</h3>
+
+        <!-- Hidden uid (no user typing required) -->
+        <input type="hidden" id="uid">
+
+        <div class="row">
+          <div>
+            <label for="day">Check-in Date</label>
+            <input id="day" type="date"/>
+          </div>
+          <div>
+            <label for="nights">Nights</label>
+            <input id="nights" type="number" min="1" max="14" value="1"/>
+          </div>
+        </div>
+
+        <div class="row" style="margin-top:10px;">
+          <div><label for="adults">Adults</label><input id="adults" type="number" min="1" max="6" value="2"/></div>
+          <div><label for="children">Children</label><input id="children" type="number" min="0" max="6" value="0"/></div>
+          <div><label for="friends">Friends</label><input id="friends" type="number" min="0" max="10" value="0"/></div>
+          <div><label for="colleagues">Colleagues</label><input id="colleagues" type="number" min="0" max="10" value="0"/></div>
+        </div>
+
+        <!-- Accessibility & Assistance (self + others) -->
+        <div style="margin-top:16px;">
+          <label>Accessibility / Disability</label>
+          <div class="row">
+            <div>
+              <label class="radio-pill" style="border-radius:10px;">
+                <input type="checkbox" id="disabled_self"/> I am disabled
+              </label>
+            </div>
+            <div>
+              <label for="disabled_others">Number of other disabled guests</label>
+              <input id="disabled_others" type="number" min="0" max="20" value="0"/>
+            </div>
+          </div>
+
+          <div class="row" style="margin-top:6px;">
+            <div>
+              <label class="radio-pill" style="border-radius:10px;">
+                <input type="checkbox" id="assistance"/> Need staff assistance on arrival
+              </label>
+            </div>
+          </div>
+
+          <div style="margin-top:10px;">
+            <label for="assist_notes">Assistance notes (optional)</label>
+            <textarea id="assist_notes" placeholder="e.g., wheelchair access; low-counter check-in; step-free route"></textarea>
+          </div>
+        </div>
+
+        <button id="go" class="cta">Continue to Payment</button>
+        <div class="note">We’ll reserve your room for a short period while you complete payment.</div>
+        <div id="msg" class="err"></div>
+        <div id="ok" class="ok"></div>
+      </div>
+    </div>
+
+    <footer>© 2025 Sunway Resort Hotel — Designed for a world-class experience</footer>
+
+    <script>
+      // ----- CONFIG -----
+      const WEBHOOK_SIGNUP = 'https://luwiwuq.app.n8n.cloud/webhook/signup';
+      const CURRENCY = 'MYR';
+
+      const ROOMS = [
+        {code:'king-deluxe', name:'KING DELUXE ROOM', desc:'Elegant interiors, premium amenities and the latest gadgetry.', sqm:'30–40 SQM', pax:'2 Adults', bed:'King', price:675.00, img:'https://image-tc.galaxy.tf/wijpeg-dghgmolkfh6t706p9wohdl5ow/testing-100.jpg', maxAdults:2, maxChildren:0},
+        {code:'business-suite', name:'BUSINESS SUITE', desc:'Private office, premium business amenities and cutting-edge technology.', sqm:'40–45 SQM', pax:'2 Adults', bed:'King', price:1296.00, img:'https://image-tc.galaxy.tf/wijpeg-dtxmgqlxs5c951n54cw5ocwov/business-2-100.jpg', maxAdults:2, maxChildren:0},
+        {code:'twin-deluxe', name:'TWIN DELUXE ROOM', desc:'Elegant interiors, premium amenities and the latest gadgetry.', sqm:'30–40 SQM', pax:'2 Adults', bed:'Twin', price:675.00, img:'https://image-tc.galaxy.tf/wijpeg-41tt1dfyv63z1yt781tfx22n6/sprh-deluxe-room-twin-02_wide.jpg?crop=0%2C76%2C1448%2C815&width=1200', maxAdults:2, maxChildren:0},
+        {code:'waterventure-terrace', name:'WATERVENTURE TERRACE', desc:'Private terrace leading directly to Waterventure children’s play area.', sqm:'45 SQM', pax:'2 Adults & 2 Children', bed:'2 Queen Beds', price:1975.50, img:'https://image-tc.galaxy.tf/wijpeg-bpbmq5394anso0h094gny2a7v/website-banner-01.jpg', maxAdults:2, maxChildren:2},
+        {code:'family-fun-suite', name:'FAMILY FUN SUITE', desc:'Fun-filled family stay with karaoke and gaming console.', sqm:'45 SQM', pax:'2 Adults & 2 Children', bed:'2 Queen Beds', price:2274.00, img:'https://image-tc.galaxy.tf/wijpeg-cm3z2yujfk6ghjikkzrmdldku/website-banner-03_wide.jpg?crop=8%2C0%2C1984%2C1116&width=1200', maxAdults:2, maxChildren:2},
+        {code:'presidential-suite', name:'PRESIDENTIAL SUITE', desc:'Top-floor suite with panoramic views and two bedrooms.', sqm:'212 SQM', pax:'4 Adults', bed:'King & Twin', price:18720.00, img:'https://image-tc.galaxy.tf/wijpeg-72juogd0ag2hbksba3osd4lua/gordon-website-imagess-18_wide.jpg?crop=8%2C0%2C1886%2C1061&width=1200', maxAdults:4, maxChildren:0}
+      ];
+
+      const roomsEl=document.getElementById('rooms'); let selected=ROOMS[0].code;
+      function render(){
+        roomsEl.innerHTML=ROOMS.map(r=>`
+        <div class="card" data-code="${r.code}">
+          <div class="img"><img src="${r.img}" alt="${r.name}"></div>
+          <div class="body">
+            <div class="name">${r.name}</div>
+            <div class="meta">${r.sqm} · ${r.pax} · ${r.bed}</div>
+            <div class="desc">${r.desc}</div>
+            <div class="price">RM ${r.price.toFixed(2)}</div>
+            <button class="selectBtn ${selected===r.code?'active':''}">Select</button>
+          </div>
+        </div>`).join('');
+        document.querySelectorAll('.selectBtn').forEach(b=>{
+          b.onclick=e=>{
+            document.querySelectorAll('.selectBtn').forEach(btn=>btn.classList.remove('active'));
+            e.target.classList.add('active');
+            selected=e.target.closest('.card').dataset.code;
+            msg(''); ok('');
+          };
+        });
+      }
+      render();
+
+      const msgEl=document.getElementById('msg'), okEl=document.getElementById('ok');
+      const msg=t=>{ msgEl.textContent=t; }; const ok=t=>{ okEl.textContent=t; };
+
+      function category(a,c,f,co){
+        const tot=a+c+f+co;
+        if(tot===1) return'solo';
+        if(a===2&&c===0&&f===0&&co===0)return'couple';
+        if(c>0)return'family';
+        if(co>0)return'colleagues';
+        if(f>0)return'friends';
+        return'group';
+      }
+      function validate(room,a,c){
+        const r=ROOMS.find(x=>x.code===room);
+        if(!r)return'Choose a room.';
+        if(a<1)return'At least one adult.';
+        if(a>r.maxAdults)return`Max ${r.maxAdults} adults for ${r.name}.`;
+        if(c>r.maxChildren)return`Max ${r.maxChildren} children for ${r.name}.`;
+        return'';
+      }
+
+      // Set min date = today
+      const dayEl=document.getElementById('day');
+      const today=new Date(); today.setHours(0,0,0,0);
+      const yyyy=today.getFullYear(), mm=String(today.getMonth()+1).padStart(2,'0'), dd=String(today.getDate()).padStart(2,'0');
+      dayEl.min=`${yyyy}-${mm}-${dd}`; dayEl.value=`${yyyy}-${mm}-${dd}`;
+
+      // UID handling (Telegram ?uid=..., else web-uuid)
+      (function initUID(){
+        function makeUUID(){ if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+          const s4=()=>Math.floor((1+Math.random())*0x10000).toString(16).slice(1);
+          return `${s4()}${s4()}-${s4()}-${s4()}-${s4()}-${s4()}${s4()}${s4()}`;
+        }
+        const params=new URLSearchParams(location.search);
+        let uid=params.get('uid');
+        if(!uid || !uid.trim()){
+          uid=localStorage.getItem('sunway_uid');
+          if(!uid){ uid='web-'+makeUUID(); localStorage.setItem('sunway_uid', uid); }
+        }else{
+          localStorage.setItem('sunway_uid', uid);
+        }
+        document.getElementById('uid').value=uid;
+        console.log('[signup] uid =', uid);
+      })();
+
+      // Continue → hold booking via n8n, then redirect to pay.html
+      document.getElementById('go').onclick=async()=>{
+        const uid=document.getElementById('uid').value.trim();
+        const day=document.getElementById('day').value;
+        const nights=+document.getElementById('nights').value||1;
+        const adults=+document.getElementById('adults').value||0;
+        const children=+document.getElementById('children').value||0;
+        const friends=+document.getElementById('friends').value||0;
+        const colleagues=+document.getElementById('colleagues').value||0;
+
+        // disability fields (self + others)
+        const disabled_self = document.getElementById('disabled_self').checked;
+        const disabled_others = Math.max(0, +(document.getElementById('disabled_others').value||0));
+        const disabled_total = (disabled_self ? 1 : 0) + disabled_others;
+        const accessibility = disabled_total > 0;
+
+        const assistance_requested = document.getElementById('assistance').checked;
+        const assistance_notes = document.getElementById('assist_notes').value.trim();
+
+        msg(''); ok('');
+
+        if(!day) return msg('Select a check-in date.');
+        const val=validate(selected,adults,children); if(val) return msg(val);
+
+        // total pax
+        const totalPax = adults + children + friends + colleagues;
+        if (disabled_total > totalPax){
+          return msg(`Disabled guests (${disabled_total}) can’t exceed total party size (${totalPax}).`);
+        }
+
+        ok('Checking availability…');
+
+        const payload={
+          uid, day, nights,
+          room_type:selected,
+          adults, children, friends, colleagues,
+          party_type: category(adults,children,friends,colleagues),
+          // new accessibility fields
+          accessibility,
+          disabled_self,
+          disabled_party_count: disabled_others,
+          disabled_total,
+          assistance_requested,
+          assistance_notes
+        };
+
+        try{
+          const res=await fetch(WEBHOOK_SIGNUP,{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify(payload)
+          });
+          const data=await res.json().catch(()=>({}));
+          if(!res.ok || !data.ok){
+            ok(''); return msg(data.message||'Sorry, that room is fully booked.');
+          }
+          const chosen=ROOMS.find(r=>r.code===selected);
+          const amount=(data.amount!==undefined?data.amount:chosen.price);
+          const qs=new URLSearchParams({
+            uid,
+            reservation_id:data.reservation_id,
+            room_type:selected,
+            amount:amount.toFixed(2),
+            currency:CURRENCY
+          });
+          location.href='pay.html?'+qs.toString();
+        }catch(e){
+          ok(''); msg('Network error. Try again.');
+        }
+      };
+    </script>
+  </body>
+  </html>

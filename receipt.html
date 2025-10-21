@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Sunway Resort Hotel — Receipt</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --main:#FFFDD0;      /* cream */
+      --secondary:#C4A484; /* champagne */
+      --accent:#AA7F2E;    /* gold */
+      --black:#000000;     /* title bar */
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--main);color:#1a1a1a;font:16px/1.6 'Poppins',sans-serif}
+    header{background:var(--black);color:var(--main);text-align:center;padding:28px 10px 36px;box-shadow:0 6px 24px rgba(0,0,0,.28)}
+    header h1{margin:0;font-family:'Playfair Display',serif;color:var(--accent);letter-spacing:.5px;font-size:34px}
+    header p{margin:6px 0 0;opacity:.9}
+    .wrap{max-width:940px;margin:40px auto;padding:20px}
+    .card{background:#fffdf6;border:1px solid var(--secondary);border-radius:16px;padding:22px;box-shadow:0 8px 24px rgba(0,0,0,.12)}
+    h2{margin:0 0 12px;font-family:'Playfair Display',serif;color:var(--accent);font-size:22px}
+    .btns{margin:8px 0 14px;display:flex;gap:12px}
+    button{padding:12px 16px;border-radius:12px;border:1px solid var(--secondary);background:#fff;color:#111;font-weight:700;cursor:pointer}
+    button.primary{background:var(--black);color:var(--main);border-color:var(--black)}
+    button.primary:hover{opacity:.9}
+    .muted{color:#555;font-size:12px;margin:6px 0 12px}
+    .error{color:#b00020;margin-top:8px}
+    canvas{width:100%;height:auto;border-radius:12px;border:1px solid var(--secondary);background:#fff}
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" crossorigin="anonymous"></script>
+</head>
+<body>
+  <header>
+    <h1>Sunway Resort Hotel</h1>
+    <p>Official Receipt & Secure QR</p>
+  </header>
+
+  <div class="wrap">
+    <div class="card">
+      <h2>Receipt & QR</h2>
+      <div class="btns">
+        <button class="primary" id="download">Download PNG</button>
+        <button id="back">Back</button>
+      </div>
+      <p class="muted">Receipt text appears at the top; QR is placed at the bottom in one image.</p>
+      <div id="err" class="error"></div>
+      <canvas id="c" width="800" height="1100"></canvas>
+    </div>
+  </div>
+
+  <script>
+    // ===== CONFIG =====
+    const WEBHOOK_URL = 'https://luwiwuq.app.n8n.cloud/webhook/payment/success';
+    const HMAC_SECRET = 'b1f0a3c4e6d792b0b95c2f7a881e4a1a8c39dff2ab9cddfb26cb66a1c2f68b91'; // replace if you want
+    const qs = new URLSearchParams(location.search);
+    const data = {
+      uid: qs.get('uid') || 'telegram_user',
+      reservation_id: qs.get('reservation_id') || '',
+      room_type: qs.get('room_type') || '',
+      token: qs.get('token') || '',
+      brand: qs.get('brand') || '',
+      last4: qs.get('last4') || '',
+      amount: parseFloat(qs.get('amount') || '50.00').toFixed(2),
+      currency: qs.get('currency') || 'MYR',
+      name: qs.get('name') || 'Guest'
+    };
+
+    const now = new Date();
+    const ymd = now.toISOString().slice(0,10).replace(/-/g,'');
+    const seq = String(Math.random()*10000|0).padStart(4,'0');
+    const receiptId = `SUNWAY-${ymd}-${seq}`;
+    const ts = Math.floor(Date.now()/1000);
+    const signingString = `ACCEPTED:${receiptId}|uid=${data.uid}|amt=${data.amount}|ccy=${data.currency}|ts=${ts}`;
+
+    const errEl = document.getElementById('err');
+    const fail = (m)=>{ errEl.textContent = m; };
+
+    async function hmacSHA256(keyStr, msg) {
+      const enc = new TextEncoder();
+      const key = await crypto.subtle.importKey('raw', enc.encode(keyStr), {name:'HMAC', hash:'SHA-256'}, false, ['sign']);
+      const sigBuf = await crypto.subtle.sign('HMAC', key, enc.encode(msg));
+      return [...new Uint8Array(sigBuf)].map(b=>b.toString(16).padStart(2,'0')).join('');
+    }
+
+    // Create a QR canvas using qrcode.js and return it when ready
+    async function makeQRCanvas(text) {
+      return new Promise((resolve, reject) => {
+        if (typeof QRCode === 'undefined') {
+          reject(new Error('QR library did not load. Check your internet connection.'));
+          return;
+        }
+        const holder = document.createElement('div');
+        new QRCode(holder, { text, width: 360, height: 360, correctLevel: QRCode.CorrectLevel.M });
+        const retry = () => {
+          const canvas = holder.querySelector('canvas');
+          if (canvas) return resolve(canvas);
+          const img = holder.querySelector('img');
+          if (img && img.complete) {
+            const c = document.createElement('canvas'); c.width=360; c.height=360;
+            const cx=c.getContext('2d'); cx.drawImage(img,0,0,360,360);
+            return resolve(c);
+          }
+          requestAnimationFrame(retry);
+        };
+        retry();
+      });
+    }
+
+    async function draw() {
+      try{
+        const sig = await hmacSHA256(HMAC_SECRET, signingString);
+        const qrText = `${signingString}|sig=${sig}`;
+        const qrCanvas = await makeQRCanvas(qrText);
+
+        const c = document.getElementById('c'), ctx = c.getContext('2d');
+
+        // Background (white for print clarity)
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0,0,c.width,c.height);
+
+        // Header text (elegant)
+        const pad=32, lineH=28; let y=pad+6;
+        ctx.fillStyle='#000000';
+        ctx.font='600 28px "Playfair Display", serif';
+        ctx.fillText('Sunway Resort Hotel — Receipt', pad, y); y+=34;
+
+        // Details
+        ctx.font='14px "Poppins", sans-serif';
+        const row=(label,value)=>{
+          ctx.fillStyle='#5e4b2d'; // champagne-gold for labels
+          ctx.fillText(label,pad,y);
+          ctx.textAlign='right';
+          ctx.fillStyle='#000000';
+          ctx.fillText(value,c.width-pad,y);
+          ctx.textAlign='left';
+          y+=lineH;
+        };
+        row('Receipt', receiptId);
+        row('Date', now.toISOString().slice(0,10));
+        row('UID', data.uid);
+        if (data.reservation_id) row('Reservation', data.reservation_id);
+        if (data.room_type) row('Room', data.room_type.replace(/-/g,' ').toUpperCase());
+        row('Card', `${(data.brand||'').toUpperCase()} •••• ${data.last4}`);
+        ctx.font='600 18px "Poppins", sans-serif';
+        row('Total', `${data.currency} ${data.amount}`);
+
+        // QR at bottom
+        const qrSize=360, qrY=c.height-pad-qrSize-70, qrX=(c.width-qrSize)/2;
+        ctx.drawImage(qrCanvas, qrX, qrY, qrSize, qrSize);
+
+        // payload under QR
+        ctx.fillStyle='#666'; ctx.font='12px ui-monospace, Menlo, Consolas';
+        const payload = qrText, max=c.width-pad*2; let line='', py=qrY+qrSize+24;
+        for (const ch of payload){ const t=line+ch; if (ctx.measureText(t).width>max){ ctx.fillText(line,pad,py); py+=16; line=ch; } else line=t; }
+        if (line) ctx.fillText(line,pad,py);
+
+        // auto-download
+        const a=document.createElement('a'); a.download=`${receiptId}.png`; a.href=c.toDataURL('image/png'); setTimeout(()=>a.click(),150);
+
+        // POST to n8n (non-blocking)
+        fetch(WEBHOOK_URL,{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({
+            uid: data.uid,
+            reservation_id: data.reservation_id || null,
+            room_type: data.room_type || null,
+            receipt_id: receiptId,
+            brand: data.brand,
+            last4: data.last4,
+            amount: +data.amount,
+            currency: data.currency,
+            qr_text: qrText,
+            image_data_url: c.toDataURL('image/png')
+          })
+        }).catch(()=>{});
+      }catch(e){
+        fail(e.message || 'QR generation failed.');
+      }
+    }
+
+    // Tip: if file:// blocks the CDN, run:  python -m http.server 8000
+    draw();
+
+    document.getElementById('download').onclick=()=>{
+      const c=document.getElementById('c'); const a=document.createElement('a');
+      a.download=`${'SUNWAY'}-${ymd}-${seq}.png`; a.href=c.toDataURL('image/png'); a.click();
+    };
+    document.getElementById('back').onclick=()=>history.back();
+  </script>
+</body>
+</html>
