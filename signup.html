@@ -242,29 +242,26 @@
           assistance_notes
         };
 
-        try{
-          const res=await fetch(WEBHOOK_SIGNUP,{
-            method:'POST',
-            headers:{'Content-Type':'application/json'},
-            body:JSON.stringify(payload)
-          });
-          const data=await res.json().catch(()=>({}));
-          if(!res.ok || !data.ok){
-            ok(''); return msg(data.message||'Sorry, that room is fully booked.');
-          }
-          const chosen=ROOMS.find(r=>r.code===selected);
-          const amount=(data.amount!==undefined?data.amount:chosen.price);
-          const qs=new URLSearchParams({
+        try {
+          const chosen = ROOMS.find(r => r.code === selected);
+          const amount = chosen.price;
+
+          const qs = new URLSearchParams({
             uid,
-            reservation_id:data.reservation_id,
-            room_type:selected,
-            amount:amount.toFixed(2),
-            currency:CURRENCY
+            reservation_id: crypto.randomUUID(), // optional — just to mimic an ID
+            room_type: selected,
+            amount: amount.toFixed(2),
+            currency: CURRENCY
           });
-          location.href='pay.html?'+qs.toString();
-        }catch(e){
-          ok(''); msg('Network error. Try again.');
+
+          // Redirect to your hosted pay.html
+          location.href = 'pay.html?' + qs.toString();
+
+        } catch (e) {
+          ok('');
+          msg('Something went wrong. Please try again.');
         }
+
       };
     </script>
   </body>
